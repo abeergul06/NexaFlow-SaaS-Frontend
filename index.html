@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="NexaFlow production-style SaaS frontend demo">
+  <title>NexaFlow — SaaS Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div id="toastRegion" class="toast-region" aria-live="polite" aria-atomic="true"></div>
+
+  <section id="authView" class="auth-view">
+    <div class="auth-brand">
+      <div class="brand-mark">N</div>
+      <span>NexaFlow</span>
+    </div>
+    <div class="auth-card">
+      <div class="auth-copy">
+        <span class="eyebrow">Workspace platform</span>
+        <h1>Build, manage, and scale your work.</h1>
+        <p>Sign in to your workspace or create a demo account to explore the SaaS experience.</p>
+      </div>
+      <div class="auth-tabs" role="tablist">
+        <button class="auth-tab active" data-auth="login" role="tab" aria-selected="true">Sign in</button>
+        <button class="auth-tab" data-auth="signup" role="tab" aria-selected="false">Create account</button>
+      </div>
+      <form id="authForm" novalidate>
+        <label for="authName" id="nameLabel" class="hidden">Full name</label>
+        <input id="authName" class="hidden" type="text" autocomplete="name" placeholder="Full name">
+        <label for="authEmail">Work email</label>
+        <input id="authEmail" type="email" autocomplete="email" placeholder="you@company.com" required>
+        <label for="authPassword">Password</label>
+        <input id="authPassword" type="password" autocomplete="current-password" placeholder="••••••••" minlength="6" required>
+        <div id="authError" class="form-error" role="alert"></div>
+        <button class="primary-btn full" type="submit"><span id="authSubmitText">Sign in</span></button>
+      </form>
+      <p class="demo-hint">Demo: enter any valid email and a password with 6+ characters.</p>
+    </div>
+  </section>
+
+  <div id="appView" class="app-shell hidden">
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-top">
+        <div class="brand"><div class="brand-mark">N</div><span>NexaFlow</span></div>
+        <button id="closeSidebar" class="icon-btn mobile-only" aria-label="Close navigation">×</button>
+      </div>
+      <nav aria-label="Main navigation">
+        <p class="nav-heading">Workspace</p>
+        <button class="nav-item active" data-page="overview"><span>⌂</span> Overview</button>
+        <button class="nav-item" data-page="projects"><span>▣</span> Projects</button>
+        <button class="nav-item" data-page="team"><span>♙</span> Team</button>
+        <button class="nav-item" data-page="activity"><span>◷</span> Activity</button>
+        <p class="nav-heading">Manage</p>
+        <button class="nav-item" data-page="settings"><span>⚙</span> Settings</button>
+      </nav>
+      <div class="sidebar-bottom">
+        <div class="plan-card"><strong>Pro workspace</strong><span>8.4 GB of 20 GB used</span><div class="progress"><i></i></div></div>
+        <button id="logoutBtn" class="nav-item logout"><span>↪</span> Sign out</button>
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <header class="topbar">
+        <button id="openSidebar" class="icon-btn mobile-only" aria-label="Open navigation">☰</button>
+        <div class="breadcrumb"><span>NexaFlow</span><b>/</b><strong id="pageTitle">Overview</strong></div>
+        <div class="top-actions">
+          <button id="searchBtn" class="top-search" aria-label="Search"><span>⌕</span><span class="search-label">Search</span><kbd>Ctrl K</kbd></button>
+          <button id="notificationBtn" class="icon-btn notification" aria-label="Notifications">♢<i></i></button>
+          <button id="profileBtn" class="profile" aria-label="Open profile menu"><span id="avatar">AG</span><span class="profile-name">Abeer</span>⌄</button>
+        </div>
+      </header>
+
+      <section id="pageContent" class="page-content" tabindex="-1"></section>
+    </main>
+  </div>
+
+  <div id="modalRoot" class="modal-root" aria-hidden="true"></div>
+
+  <template id="overviewTemplate">
+    <div class="page-heading">
+      <div><span class="eyebrow">Monday, September 14</span><h1>Good morning, Abeer</h1><p>Here's what's happening across your workspace.</p></div>
+      <button class="primary-btn" data-action="new-project">＋ New project</button>
+    </div>
+    <div class="stats-grid" id="statsGrid"></div>
+    <div class="content-grid">
+      <section class="panel chart-panel">
+        <div class="panel-header"><div><h2>Workspace activity</h2><p>Projects completed over the last 6 months</p></div><select id="chartRange" aria-label="Chart range"><option>Last 6 months</option><option>Last 30 days</option></select></div>
+        <div class="bar-chart" id="barChart" aria-label="Activity chart"></div>
+      </section>
+      <section class="panel">
+        <div class="panel-header"><div><h2>Recent activity</h2><p>Latest workspace events</p></div><button class="text-btn" data-page="activity">View all</button></div>
+        <div id="activityList" class="activity-list"></div>
+      </section>
+    </div>
+    <section class="panel table-panel">
+      <div class="panel-header"><div><h2>Recent projects</h2><p>Track your most important work.</p></div><button class="text-btn" data-page="projects">View projects</button></div>
+      <div id="recentProjects"></div>
+    </section>
+  </template>
+
+  <template id="projectsTemplate">
+    <div class="page-heading"><div><span class="eyebrow">Workspace</span><h1>Projects</h1><p>Create, search, filter, and manage your projects.</p></div><button class="primary-btn" data-action="new-project">＋ New project</button></div>
+    <section class="panel">
+      <div class="toolbar">
+        <label class="search-box"><span>⌕</span><input id="projectSearch" placeholder="Search projects..." aria-label="Search projects"></label>
+        <select id="projectFilter" aria-label="Filter projects"><option value="all">All status</option><option value="Active">Active</option><option value="Planning">Planning</option><option value="Completed">Completed</option></select>
+      </div>
+      <div id="projectTable"></div>
+    </section>
+  </template>
+
+  <template id="teamTemplate">
+    <div class="page-heading"><div><span class="eyebrow">Workspace</span><h1>Team</h1><p>Manage members and roles.</p></div><button class="primary-btn" data-action="invite">＋ Invite member</button></div>
+    <section class="panel"><div class="toolbar"><label class="search-box"><span>⌕</span><input id="teamSearch" placeholder="Search team..." aria-label="Search team members"></label></div><div id="teamTable"></div></section>
+  </template>
+
+  <template id="activityTemplate">
+    <div class="page-heading"><div><span class="eyebrow">Workspace</span><h1>Activity</h1><p>A chronological view of workspace events.</p></div></div>
+    <section class="panel"><div id="fullActivity" class="activity-list"></div></section>
+  </template>
+
+  <template id="settingsTemplate">
+    <div class="page-heading"><div><span class="eyebrow">Manage</span><h1>Settings</h1><p>Configure your workspace preferences.</p></div></div>
+    <section class="settings-grid">
+      <form class="panel settings-card" id="settingsForm">
+        <h2>Workspace profile</h2><p>Basic information displayed to your team.</p>
+        <label>Workspace name<input name="workspace" value="NexaFlow"></label>
+        <label>Workspace URL<input name="url" value="nexaflow.example"></label>
+        <label>Timezone<select name="timezone"><option>Asia/Karachi (PKT)</option><option>UTC</option><option>Europe/London</option></select></label>
+        <button class="primary-btn" type="submit">Save changes</button>
+      </form>
+      <section class="panel settings-card"><h2>Notifications</h2><p>Choose which updates you receive.</p>
+        <label class="switch-row">Project updates <input type="checkbox" checked><i></i></label>
+        <label class="switch-row">Weekly summary <input type="checkbox" checked><i></i></label>
+        <label class="switch-row">Security alerts <input type="checkbox" checked><i></i></label>
+      </section>
+    </section>
+  </template>
+
+  <script src="app.js"></script>
+</body>
+</html>
